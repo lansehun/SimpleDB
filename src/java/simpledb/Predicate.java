@@ -1,18 +1,18 @@
 package simpledb;
-
+ 
 import java.io.Serializable;
-
+ 
 /**
  * Predicate compares tuples to a specified Field value.
  */
 public class Predicate implements Serializable {
-
+ 
     private static final long serialVersionUID = 1L;
-
+ 
     /** Constants used for return codes in Field.compare */
     public enum Op implements Serializable {
         EQUALS, GREATER_THAN, LESS_THAN, LESS_THAN_OR_EQ, GREATER_THAN_OR_EQ, LIKE, NOT_EQUALS;
-
+ 
         /**
          * Interface to access operations by integer value for command-line
          * convenience.
@@ -23,7 +23,7 @@ public class Predicate implements Serializable {
         public static Op getOp(int i) {
             return values()[i];
         }
-
+ 
         public String toString() {
             if (this == EQUALS)
                 return "=";
@@ -41,8 +41,12 @@ public class Predicate implements Serializable {
                 return "<>";
             throw new IllegalStateException("impossible to reach here");
         }
-
+ 
     }
+ 
+    private final int field;
+    private final Op op;
+    private final Field operand;
     
     /**
      * Constructor.
@@ -56,24 +60,27 @@ public class Predicate implements Serializable {
      */
     public Predicate(int field, Op op, Field operand) {
         // some code goes here
+        this.field = field;
+        this.op = op;
+        this.operand = operand;
     }
-
+ 
     /**
      * @return the field number
      */
     public int getField()
     {
         // some code goes here
-        return -1;
+        return field;
     }
-
+ 
     /**
      * @return the operator
      */
     public Op getOp()
     {
         // some code goes here
-        return null;
+        return op;
     }
     
     /**
@@ -82,7 +89,7 @@ public class Predicate implements Serializable {
     public Field getOperand()
     {
         // some code goes here
-        return null;
+        return operand;
     }
     
     /**
@@ -97,15 +104,16 @@ public class Predicate implements Serializable {
      */
     public boolean filter(Tuple t) {
         // some code goes here
-        return false;
+        return t.getField(field).compare(op,operand);
     }
-
+ 
     /**
      * Returns something useful, like "f = field_id op = op_string operand =
      * operand_string"
      */
     public String toString() {
         // some code goes here
-        return "";
+        String s = String.format("f = %d op = %s operand = %s", field,op.toString(),operand.toString());
+        return s;
     }
 }
