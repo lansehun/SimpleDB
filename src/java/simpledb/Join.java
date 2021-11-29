@@ -13,7 +13,6 @@ public class Join extends Operator {
     private OpIterator child1;
     private OpIterator child2;
     private Tuple t;
- 
     /**
      * Constructor. Accepts two children to join and the predicate to join them
      * on
@@ -35,7 +34,7 @@ public class Join extends Operator {
  
     public JoinPredicate getJoinPredicate() {
         // some code goes here
-        return p;
+        return this.p;
     }
  
     /**
@@ -108,8 +107,8 @@ public class Join extends Operator {
      */
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         // some code goes here
-        while(this.child1.hasNext() || this.t != null){
-            if(this.child1.hasNext() && this.t == null){
+        while(child1.hasNext() || t != null){
+            if(child1.hasNext() &&t == null){
                 t = child1.next();
             }
             while(child2.hasNext()){
@@ -137,6 +136,8 @@ public class Join extends Operator {
         }
         return null;
     }
+
+
  
     @Override
     public OpIterator[] getChildren() {
