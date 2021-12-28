@@ -131,34 +131,34 @@ public class HeapFile implements DbFile {
     public ArrayList<Page> insertTuple(TransactionId tid, Tuple t)
             throws DbException, IOException, TransactionAbortedException {
         // some code goes here
-        HeapPage page  = null;
- 
-        // find a non full page
+         ArrayList<Page> pageList= new ArrayList<Page>();
         for(int i=0;i<numPages();++i){
-            HeapPageId pid = new HeapPageId(getId(),i);
-            page = (HeapPage)Database.getBufferPool().getPage(tid,pid,Permissions.READ_WRITE);
-            if(page.getNumEmptySlots()!=0){
-                break;
-            }
+	    HeapPageId pid = new HeapPageId(getId(),i);
+            // took care of getting new page
+            HeapPage p = (HeapPage) Database.getBufferPool().getPage(tid,
+                    new HeapPageId(this.getId(),i),Permissions.READ_WRITE);
+            if(p.getNumEmptySlots() == 0)
+		{
+		Database.getBufferPool().releasePage(tid,pid);
+                continue;
+		}
             else{
-                Database.getBufferPool().releasePage(tid,pid);
-            }
+		    p.insertTuple(t);
+		    pageList.add(p);
+		    return pageList;
+		}
         }
- 
-        // if not exist an empty slot, create a new page to store
-        if(page == null || page.getNumEmptySlots() == 0){
-            HeapPageId pid = new HeapPageId(getId(),numPages());
-            byte[] data = HeapPage.createEmptyPageData();
-            HeapPage heapPage = new HeapPage(pid,data);
-            writePage(heapPage);
-            page = (HeapPage)Database.getBufferPool().getPage(tid,pid,Permissions.READ_WRITE);
-        }
- 
-        page.insertTuple(t);
- 
-        ArrayList<Page> res = new ArrayList<>();
-        res.add(page);
-        return res;
+        // no new page
+        BufferedOutputStream bw = new BufferedOutputStream(new FileOutputStream(file,true));
+        byte[] emptyData = HeapPage.createEmptyPageData();
+        bw.write(emptyData);
+        bw.close();
+        // load into cache
+        HeapPage p = (HeapPage) Database.getBufferPool().getPage(tid,
+                new HeapPageId(getId(),numPages()-1),Permissions.READ_WRITE);
+        p.insertTuple(t);
+        pageList.add(p);
+        return pageList;
     }
 
  
